@@ -1,210 +1,298 @@
-
-
-
-
-
-
 class Node:
     value = None
     parent = None
     left = None
     right = None
 
-    def __init__(self,val):
+    def __init__(self, val):
         self.value = val
 
-    def getvalue(self):
+    def get_value(self):
         return self.value
 
-    def getparent(self):
+    def get_parent(self):
         return self.parent
 
-    def getleft(self):
+    def get_left(self):
         return self.left
 
-    def getright(self):
+    def get_right(self):
         return self.right
 
 
-
-class BST():
-
-
-
+class BST:
     root = None
 
-    def __init__(self,A):
+    def __init__(self, a):
 
-        self.root = Node(A[0])
+        self.root = Node(a[0])
 
-        for value in A[1:]:
-
+        for value in a[1:]:
             self.insert(value)
 
-    def insert(self,value):
+    def insert(self, value: int):
 
-        currentNode = self.root
+        if self.root is None:
+            self.root = Node(value)
+            return
 
-        newnode = Node(value)
+        current_node = self.root
 
+        new_node = Node(value)
 
-        while (newnode.parent == None):
+        while new_node.parent is None:
 
             # right node, parent right NIL
-            if value >= currentNode.getvalue() and currentNode.getright() == None:
+            if value >= current_node.get_value() and current_node.get_right() is None:
 
-                currentNode.right = newnode
-                newnode.parent = currentNode
-                currentNode = self.root
+                current_node.right = new_node
+                new_node.parent = current_node
+                current_node = self.root
             # left node, parent left NIL
-            elif value <= currentNode.getvalue() and currentNode.getleft() == None:
-                currentNode.left = newnode
-                newnode.parent = currentNode
-                currentNode = self.root
+            elif value <= current_node.get_value() and current_node.get_left() is None:
+                current_node.left = new_node
+                new_node.parent = current_node
+                current_node = self.root
 
                 # navigate into right node, start new iteration
-            elif value >= currentNode.getvalue():
-                currentNode = currentNode.right
+            elif value >= current_node.get_value():
+                current_node = current_node.right
 
                 # navigate into left node, start new iteration
             else:
-                currentNode = currentNode.left
+                current_node = current_node.left
 
-    def inordertraversal(self):
+    def in_order_traversal(self) -> list:
 
-        inorder(self.root)
+        array = []
 
+        if self.root is not None:
+            self.in_order(self.root, array)
 
+        return array
 
-    def find_min(self):
+    def in_order(self, node, array: list) -> list:
 
-        currentnode = self.root
+        if node.left is None and node.right is None:
+            pass
+        elif node.left is not None:
+            self.in_order(node.left, array)
 
-        while(currentnode.left != None):
-            currentnode = currentnode.left
+        array.append(node.value)
 
+        if node.right is not None:
+            self.in_order(node.right, array)
 
+        return array
 
-    def search(self,value):
+    @staticmethod
+    def find_min(node=root) -> Node:
 
-        currentnode = self.root
+        current_node = node
 
+        while current_node.left is not None:
+            current_node = current_node.left
 
+        return current_node
 
-        while(currentnode.left != None or currentnode.right != None):
+    @staticmethod
+    def find_max(node=root) -> Node:
 
-            if currentnode.value == value:
-                return currentnode
-            if currentnode.value > value:
-                currentnode = currentnode.left
+        current_node = node
+
+        while current_node.right is not None:
+            current_node = current_node.right
+
+        return current_node
+
+    # returns node with value if found. if not found,
+    #  returns node of would-be parent to value as tuple with (node, False)
+    # if node is found, returns (node, True) tuple, y value indicating it found the specified value.
+    def search(self, value: int) -> tuple:
+        # current_node starts at root of tree
+        # returns None if root does not exist.
+        if self.root is None:
+            return None, false
+
+        current_node = self.root
+        while True:
+            # current_node is equal to value, node is found.
+            if current_node == value:
+                return current_node, True
+            # Value is smaller than current_node, go to left child
+            elif current_node.value > value and current_node.left is not None:
+                current_node = current_node.left
+                # value is larger than current_node, go to right child
+            elif current_node.value < value and current_node.right is not None:
+                current_node = current_node.right
+            # the value is not in the tree, return parent_node
+            else:
+                return current_node, False
+
+    def find_larger(self, value: int) -> Node or None:
+
+        current_node = self.search(value)[0]
+
+        # current_node is actual value in tree:
+        if value == current_node.value:
+
+            # if right subtree exists, next_larger is
+            # the minimum of right subtree
+            if current_node.right is not None:
+                return self.find_min(current_node.right)
+            # else, iterate up parents until current node is left child
+            # return parent_node, which is next_larger in this case.
+            else:
+                # if parent is None, next larger does not exist.
+                while current_node.parent is not None:
+
+                    if current_node.parent.left == current_node:
+                        return current_node.parent
+                    else:
+                        # move up one tree-level
+                        current_node = current_node.parent
+                        # next larger does not exist, return None
+                return None
+
+                # current_node is parent node to would-be value in tree:
+
+        else:
+
+            # if parent node is larger than value, it is the next-larger:
+
+            if current_node.value > value:
+                return current_node
+
+            # otherwise, iterate up parents until current node is left child
+            else:
+                # if parent is None, next larger does not exist.
+                while current_node.parent is not None:
+
+                    if current_node.parent.left == current_node:
+                        return current_node.parent
+                    else:
+                        # move up one tree-level
+                        current_node = current_node.parent
+                        # next larger does not exist, return None
+                return None
+
+    def find_smaller(self, value: int) -> Node or None:
+        current_node = self.search(value)[0]
+
+        # current_node is actual value in tree:
+        if value == current_node.value:
+
+            # if left subtree exists, next_smaller is
+            # the maximum of left subtree
+            if current_node.left is not None:
+                return self.find_max(current_node.left)
+            # else, iterate up parents until current node is right child
+            # return parent_node, which is next_smaller in this case.
+            else:
+                # if parent is None, next smaller does not exist.
+                while current_node.parent is not None:
+
+                    if current_node.parent.right == current_node:
+                        return current_node.parent
+                    else:
+                        # move up one tree-level
+                        current_node = current_node.parent
+                        # next smaller does not exist, return None
+                return None
+
+                # current_node is parent node to would-be value in tree:
+
+        else:
+            # if parent node is smaller than value, it is the next-smaller:
+
+            if current_node.value < value:
+                return current_node
+
+            # otherwise, iterate up parents until current node is right child
+            else:
+                # if parent is None, next larger does not exist.
+                while current_node.parent is not None:
+
+                    if current_node.parent.right == current_node:
+                        return current_node.parent
+                    else:
+                        # move up one tree-level
+                        current_node = current_node.parent
+                        # next larger does not exist, return None
+                return None
+
+    def delete(self, value: int) -> bool:
+
+        current_node = self.search(value)[0]
+        # value/node does not exist, return False
+        if self.root is None or value != current_node.value:
+            return False
+
+        # if you're a leaf, we take you out:
+        if current_node.left is None and current_node.right is None:
+
+            # if its the last node, which is root.
+            if current_node == self.root:
+                self.root = None
+
+            # node is left child:
+            elif current_node.parent.left == current_node:
+                current_node.parent.left = None
+                current_node.parent = None
+            # node is right child:
+            else:
+                current_node.parent.right = None
+                current_node.parent = None
+
+        # if you have two subtrees, we find next larger and replace its value with your node, and delete next-larger
+        elif current_node.left is not None and current_node.right is not None:
+            replacer = self.find_larger(current_node.value)
+            new_val = replacer.value
+            self.delete(replacer.value)
+            current_node.value = new_val  # this is always a leaf
+
+        # else: there is one subtree or node, make the parent of the node being deleted now point at that
+        # node/ start of subtree instead.
+        # will also work when deleting current root
+
+        else:
+            # the node being deleted is the root, when it has one subtree.
+            if current_node == self.root:
+
+                # the only subtree is the left child
+                if current_node.left is not None:
+
+                    self.root = current_node.left
+                    self.root.parent = None
+                    # the only subtree is the right child
+                else:
+                    self.root = current_node.right
+                    self.root.parent = None
+
+            # node being deleted is left child:
+            elif current_node.parent.left == current_node:
+
+                # existing subtree/node is left child, replacer
+                if current_node.left is not None:
+                    current_node.parent.left = current_node.left
+                    current_node.left.parent = current_node.parent
+
+                # existing subtree(node is right child, replacer
+                else:
+                    current_node.parent.left = current_node.right
+                    current_node.right.parent = current_node.parent
+            # node being deleted is right child
 
             else:
-                currentnode = currentnode.right
 
+                # existing subtree/node is left child, replacer
+                if current_node.left is not None:
+                    current_node.parent.right = current_node.left
+                    current_node.left.parent = current_node.parent
 
-        if currentnode.value == value:
-            return currentnode
-        else:
-            return None
-
-
-    def find_larger(self,value):
-        currentnode = self.root
-
-        found = False
-
-        while(not found): ## finds value in tree, moves on to next routine
-
-            if currentnode.value == value:
-                found = True
-
-            elif(currentnode.value > value):
-        # currentnode's value is larger than value that is searching for,
-        # traversing to left node, if it exists. if it does not exist, that is where the value would be.
-        # since it would be in the left node, the parentnode is the immediate next larger, so we return parentnode.
-
-                if(currentnode.left != None):  # currentnode.left exists, traversing there
-                    currentnode = currentnode.left
-                else: # currentnode.left does not exist / searched value not in tree, returning parentnode( currentnode )
-                    return currentnode
-            else: # value is larger than currentnode, and traverses to right child.
-
-                if(currentnode.right != None): # currentnode.right exists, traversing there
-                    currentnode = currentnode.right
-
-
-
-
-
-        if (currentnode.value == value): # current node is the node with the value.
-
-            if(currentnode.right != None): # immediate larger exists for value, in the right subtree's minimum.
-                currentnode = currentnode.right
-
-                while(currentnode.left != None):
-                    currentnode = currentnode.left
-
-                return currentnode   ## find larger in immediate right subtree
-
-                # next-larger node exists in next parentnode that has the currentnode as left child
-                # OR next-larger does not exist and will return None
-
-
-            while 1:
-                if (currentnode.parent.left == currentnode):
-                    return currentnode.parent
-
-                    # returns None because there is no next-larger
-                if (currentnode.parent == None):
-                    return None
+                # existing subtree(node is right child, replacer
                 else:
-                    currentnode = currentnode.parent
+                    current_node.parent.right = current_node.right
+                    current_node.left.parent = current_node.parent
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def inorder(node):
-
-    if(node.left == None and node.right == None):
-        pass
-    elif node.left != None:
-        inorder(node.left)
-
-
-    print(node.value)
-
-    if node.right != None:
-        inorder(node.right)
-
-
-    return
-
-
-
-
-# A = [1,2,9,5,10,4,3,7,6,8]
-
-
-A = [4, 1000, 48, 0, 13, 3, 7, 9, 666, 79, 4, 41, 5]
-
-
-
-
-
-
-
-
-
+        return True
